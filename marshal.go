@@ -71,46 +71,55 @@ func Marshal(l *LDIF) (data string, err error) {
 			}
 			data += foldLine("dn: "+e.Modify.DN, fw) + "\n"
 			data += "changetype: modify\n"
-			for _, mod := range e.Modify.AddAttributes {
-				if len(mod.Vals) == 0 {
+			for _, mod := range e.Modify.Changes {
+				if mod.Operation != ldap.AddAttribute {
+					continue
+				}
+				if len(mod.Modification.Vals) == 0 {
 					return "", errors.New("changetype 'modify', op 'add' requires non empty value list")
 				}
 
-				data += "add: " + mod.Type + "\n"
-				for _, v := range mod.Vals {
+				data += "add: " + mod.Modification.Type + "\n"
+				for _, v := range mod.Modification.Vals {
 					ev, t := encodeValue(v)
 					col := ": "
 					if t {
 						col = ":: "
 					}
-					data += foldLine(mod.Type+col+ev, fw) + "\n"
+					data += foldLine(mod.Modification.Type+col+ev, fw) + "\n"
 				}
 				data += "-\n"
 			}
-			for _, mod := range e.Modify.DeleteAttributes {
-				data += "delete: " + mod.Type + "\n"
-				for _, v := range mod.Vals {
+			for _, mod := range e.Modify.Changes {
+				if mod.Operation != ldap.DeleteAttribute {
+					continue
+				}
+				data += "delete: " + mod.Modification.Type + "\n"
+				for _, v := range mod.Modification.Vals {
 					ev, t := encodeValue(v)
 					col := ": "
 					if t {
 						col = ":: "
 					}
-					data += foldLine(mod.Type+col+ev, fw) + "\n"
+					data += foldLine(mod.Modification.Type+col+ev, fw) + "\n"
 				}
 				data += "-\n"
 			}
-			for _, mod := range e.Modify.ReplaceAttributes {
-				if len(mod.Vals) == 0 {
+			for _, mod := range e.Modify.Changes {
+				if mod.Operation != ldap.ReplaceAttribute {
+					continue
+				}
+				if len(mod.Modification.Vals) == 0 {
 					return "", errors.New("changetype 'modify', op 'replace' requires non empty value list")
 				}
-				data += "replace: " + mod.Type + "\n"
-				for _, v := range mod.Vals {
+				data += "replace: " + mod.Modification.Type + "\n"
+				for _, v := range mod.Modification.Vals {
 					ev, t := encodeValue(v)
 					col := ": "
 					if t {
 						col = ":: "
 					}
-					data += foldLine(mod.Type+col+ev, fw) + "\n"
+					data += foldLine(mod.Modification.Type+col+ev, fw) + "\n"
 				}
 				data += "-\n"
 			}
