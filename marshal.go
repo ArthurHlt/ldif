@@ -4,8 +4,9 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"gopkg.in/ldap.v2"
 	"io"
+
+	"gopkg.in/ldap.v3"
 )
 
 var foldWidth = 76
